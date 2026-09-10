@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% set title_map = {
+    'create': '新增商品申报',
+    'update': '商品修改申报',
+    'resubmit': '修改后重新申报',
+    'admin_edit': '管理员修改商品'
+} %}
+
+{% block title %}{{ title_map[mode] }} - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>{{ title_map[mode] }}</h1>
+    {% if mode == 'resubmit' and application.reject_reason %}
+        <p class="reject-box">上次驳回理由：{{ application.reject_reason }}</p>
+    {% endif %}
+</section>
+
+<form class="panel form-grid" method="post">
+    <label>
+        商品名称
+        <input name="name" required value="{{ request.form.get('name', product.name if product else application.name if application else '') }}">
+    </label>
+    <label>
+        商品分类
+        {% set selected_category = request.form.get('category_id', product.category_id if product else application.category_id if application else '')|string %}
+        <select name="category_id" required>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if selected_category == category.id|string %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        产地
+        <input name="origin" value="{{ request.form.get('origin', product.origin if product else application.origin if application else '') }}">
+    </label>
+    <label>
+        价格
+        <input type="number" name="price" step="0.01" min="0.01" required value="{{ request.form.get('price', product.price if product else application.price if application else '') }}">
+    </label>
+    <label>
+        库存
+        <input type="number" name="stock" min="0" required value="{{ request.form.get('stock', product.stock if product else application.stock if application else '') }}">
+    </label>
+    {% if mode in ['update', 'resubmit', 'admin_edit'] %}
+        <label>
+            目标状态
+            {% set selected_status = request.form.get('requested_status', product.status if product else application.requested_status if application else 'active') %}
+            <select name="requested_status">
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>上架</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>下架</option>
+            </select>
+        </label>
+    {% else %}
+        <input type="hidden" name="requested_status" value="active">
+    {% endif %}
+    <label class="full">
+        图片 URL
+        <input name="image_url" value="{{ request.form.get('image_url', product.image_url if product else application.image_url if application else '') }}">
+    </label>
+    <label class="full">
+        商品描述
+        <textarea name="description" rows="5">{{ request.form.get('description', product.description if product else application.description if application else '') }}</textarea>
+    </label>
+    <div class="form-actions full">
+        <button type="submit">
+            {% if mode == 'admin_edit' %}保存商品{% elif mode == 'resubmit' %}重新提交{% else %}提交申报{% endif %}
+        </button>
+        {% if current_user.role == 'admin' %}
+            <a class="button secondary" href="{{ url_for('admin_products') }}">返回</a>
+        {% else %}
+            <a class="button secondary" href="{{ url_for('merchant_dashboard') }}">返回</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

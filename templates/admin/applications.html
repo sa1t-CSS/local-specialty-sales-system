@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}申报审核 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>申报审核</h1>
+    <p>批准后商品变更立即生效；驳回时必须填写理由。</p>
+</section>
+
+{% if applications %}
+    <section class="table-panel wide">
+        <table>
+            <thead>
+                <tr>
+                    <th>状态</th>
+                    <th>类型</th>
+                    <th>商家</th>
+                    <th>商品</th>
+                    <th>分类</th>
+                    <th>价格</th>
+                    <th>库存</th>
+                    <th>目标状态</th>
+                    <th>时间</th>
+                    <th>审核</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                    <tr>
+                        <td><span class="status {{ application.status }}">{{ status_names[application.status] }}</span></td>
+                        <td>{{ application_type_names[application.application_type] }}</td>
+                        <td>{{ application.merchant_name }}</td>
+                        <td>
+                            <strong>{{ application.name }}</strong>
+                            {% if application.current_product_name %}
+                                <span class="muted">原商品：{{ application.current_product_name }}</span>
+                            {% endif %}
+                            {% if application.reject_reason %}
+                                <span class="muted">驳回理由：{{ application.reject_reason }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ application.category_name }}</td>
+                        <td>￥{{ "%.2f"|format(application.price) }}</td>
+                        <td>{{ application.stock }}</td>
+                        <td>{{ status_names[application.requested_status] }}</td>
+                        <td>{{ application.submitted_at }}</td>
+                        <td class="review-cell">
+                            {% if application.status == 'pending' %}
+                                <form method="post" action="{{ url_for('approve_application', application_id=application.id) }}">
+                                    <button class="small" type="submit">批准</button>
+                                </form>
+                                <form class="reject-form" method="post" action="{{ url_for('reject_application', application_id=application.id) }}">
+                                    <input name="reject_reason" placeholder="驳回理由" required>
+                                    <button class="small danger" type="submit">驳回</button>
+                                </form>
+                            {% else %}
+                                <span class="muted">{{ application.reviewed_at or '-' }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>暂无申报</h2>
+    </section>
+{% endif %}
+{% endblock %}

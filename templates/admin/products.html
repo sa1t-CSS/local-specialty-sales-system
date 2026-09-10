@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}商品管理 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title split">
+    <div>
+        <h1>商品管理</h1>
+        <p>商家批准后的商品集中展示，管理员可直接维护异常数据。</p>
+    </div>
+    <a class="button secondary" href="{{ url_for('admin_applications') }}">查看申报</a>
+</section>
+
+{% if products %}
+    <section class="table-panel wide">
+        <table>
+            <thead>
+                <tr>
+                    <th>商品</th>
+                    <th>商家</th>
+                    <th>分类</th>
+                    <th>产地</th>
+                    <th>价格</th>
+                    <th>库存</th>
+                    <th>销量</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.merchant_name }}</td>
+                        <td>{{ product.category_name }}</td>
+                        <td>{{ product.origin or '-' }}</td>
+                        <td>￥{{ "%.2f"|format(product.price) }}</td>
+                        <td>
+                            {{ product.stock }}
+                            {% if product.stock <= low_stock_threshold %}
+                                <span class="status rejected">库存预警</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.sales }}</td>
+                        <td><span class="status">{{ status_names[product.status] }}</span></td>
+                        <td class="action-cell">
+                            <a class="button small secondary" href="{{ url_for('admin_edit_product', product_id=product.id) }}">编辑</a>
+                            <form method="post" action="{{ url_for('admin_delete_product', product_id=product.id) }}">
+                                <button class="small danger" type="submit">下架</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>暂无商品</h2>
+    </section>
+{% endif %}
+{% endblock %}

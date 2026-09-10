@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}分类管理 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>分类管理</h1>
+</section>
+
+<form class="panel inline-create" method="post">
+    <input type="hidden" name="action" value="add">
+    <input name="name" placeholder="分类名称" required>
+    <input name="description" placeholder="分类说明">
+    <button type="submit">新增分类</button>
+</form>
+
+<section class="table-panel">
+    <table>
+        <thead>
+            <tr>
+                <th>分类名称</th>
+                <th>说明</th>
+                <th>商品数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td colspan="4">
+                        <form class="row-form" method="post">
+                            <input type="hidden" name="category_id" value="{{ category.id }}">
+                            <input type="hidden" name="action" value="edit">
+                            <input name="name" value="{{ category.name }}" required>
+                            <input name="description" value="{{ category.description or '' }}">
+                            <span>{{ category.product_count }}</span>
+                            <button class="small" type="submit">保存</button>
+                        </form>
+                        <form class="delete-row-form" method="post">
+                            <input type="hidden" name="category_id" value="{{ category.id }}">
+                            <input type="hidden" name="action" value="delete">
+                            <button class="small danger" type="submit">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

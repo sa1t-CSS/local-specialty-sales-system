@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}商家订单 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>商家订单</h1>
+    <p>消费者提交订单后会同步到这里。填写物流信息申请发货，管理员批准后才会正式发货。</p>
+</section>
+
+{% if fulfillments %}
+    <section class="order-list">
+        {% for fulfillment in fulfillments %}
+            <article class="panel">
+                <div class="order-head">
+                    <div>
+                        <strong>订单 #{{ fulfillment.order_id }}</strong>
+                        <span>消费者：{{ fulfillment.display_name }}（{{ fulfillment.username }}） · {{ fulfillment.order_created_at }}</span>
+                    </div>
+                    <div>
+                        <span class="status {{ fulfillment.status }}">{{ fulfillment_status_names[fulfillment.status] }}</span>
+                        <strong>本商家金额：￥{{ "%.2f"|format(fulfillment.merchant_total) }}</strong>
+                    </div>
+                </div>
+
+                {% if fulfillment.shipping_note %}
+                    <p class="notice-line">配送说明：{{ fulfillment.shipping_note }}</p>
+                {% endif %}
+                {% if fulfillment.reject_reason %}
+                    <p class="reject-box">管理员驳回理由：{{ fulfillment.reject_reason }}</p>
+                {% endif %}
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>商品</th>
+                            <th>单价</th>
+                            <th>数量</th>
+                            <th>小计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fulfillment_items[fulfillment.id] %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td>￥{{ "%.2f"|format(item.price) }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>￥{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if fulfillment.status in ['new', 'rejected'] and fulfillment.order_status not in ['cancelled', 'completed'] %}
+                    <form class="shipment-form" method="post" action="{{ url_for('merchant_request_shipment', fulfillment_id=fulfillment.id) }}">
+                        <input name="shipping_note" placeholder="填写物流单号或配送说明" required>
+                        <button type="submit">申请发货</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>暂无消费者订单</h2>
+        <p>消费者购买您的商品并提交订单后，订单会显示在这里。</p>
+    </section>
+{% endif %}
+{% endblock %}

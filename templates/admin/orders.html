@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}订单管理 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>订单管理</h1>
+</section>
+
+{% if orders %}
+    <section class="order-list">
+        {% for order in orders %}
+            <article class="panel">
+                <div class="order-head">
+                    <div>
+                        <strong>订单 #{{ order.id }}</strong>
+                        <span>{{ order.display_name }}（{{ order.username }}） · {{ order.created_at }}</span>
+                    </div>
+                    <div>
+                        <strong>￥{{ "%.2f"|format(order.total_amount) }}</strong>
+                        <form class="inline-form" method="post" action="{{ url_for('update_order_status', order_id=order.id) }}">
+                            <select name="status">
+                                {% for key, label in order_status_names.items() %}
+                                    <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="small" type="submit">更新</button>
+                        </form>
+                    </div>
+                </div>
+                {% if fulfillments[order.id] %}
+                    <div class="fulfillment-list">
+                        {% for fulfillment in fulfillments[order.id] %}
+                            <div class="fulfillment-row admin-fulfillment">
+                                <div>
+                                    <strong>{{ fulfillment.merchant_name }}</strong>
+                                    <span class="status {{ fulfillment.status }}">{{ fulfillment_status_names[fulfillment.status] }}</span>
+                                    {% if fulfillment.shipping_note %}
+                                        <span>配送说明：{{ fulfillment.shipping_note }}</span>
+                                    {% endif %}
+                                    {% if fulfillment.reject_reason %}
+                                        <span class="danger-text">驳回理由：{{ fulfillment.reject_reason }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if fulfillment.status == 'shipment_requested' %}
+                                    <div class="review-cell">
+                                        <form method="post" action="{{ url_for('approve_shipment', fulfillment_id=fulfillment.id) }}">
+                                            <button class="small" type="submit">批准发货</button>
+                                        </form>
+                                        <form class="reject-form" method="post" action="{{ url_for('reject_shipment', fulfillment_id=fulfillment.id) }}">
+                                            <input name="reject_reason" placeholder="驳回理由" required>
+                                            <button class="small danger" type="submit">驳回</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>商品</th>
+                            <th>单价</th>
+                            <th>数量</th>
+                            <th>小计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items[order.id] %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td>￥{{ "%.2f"|format(item.price) }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>￥{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>暂无订单</h2>
+    </section>
+{% endif %}
+{% endblock %}

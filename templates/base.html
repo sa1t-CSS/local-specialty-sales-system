@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}土特产网络销售系统{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('index') }}">土特产网络销售系统</a>
+        <nav class="nav">
+            <a href="{{ url_for('index') }}">商品</a>
+            {% if current_user %}
+                {% if current_user.role == 'consumer' %}
+                    <a href="{{ url_for('cart') }}">购物车</a>
+                    <a href="{{ url_for('consumer_orders') }}">我的订单</a>
+                {% elif current_user.role == 'merchant' %}
+                    <a href="{{ url_for('merchant_dashboard') }}">商家中心</a>
+                    <a href="{{ url_for('merchant_orders') }}">商家订单</a>
+                {% elif current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}">后台首页</a>
+                    <a href="{{ url_for('admin_applications') }}">申报审核</a>
+                    <a href="{{ url_for('admin_products') }}">商品管理</a>
+                    <a href="{{ url_for('admin_orders') }}">订单管理</a>
+                    <a href="{{ url_for('admin_categories') }}">分类</a>
+                    <a href="{{ url_for('admin_users') }}">用户</a>
+                {% endif %}
+                <span class="user-badge">{{ current_user.display_name }} · {{ role_names[current_user.role] }}</span>
+                <a href="{{ url_for('logout') }}">退出</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">登录</a>
+                <a class="nav-strong" href="{{ url_for('register') }}">注册</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="page">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-area">
+                    {% for message in messages %}
+                        <div class="flash">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

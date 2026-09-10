@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}后台首页 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title split">
+    <div>
+        <h1>后台首页</h1>
+        <p>集中查看申报、商品、库存和订单统计。</p>
+    </div>
+    <div class="inline-actions">
+        <a class="button" href="{{ url_for('admin_applications') }}">审核申报</a>
+        <a class="button secondary" href="{{ url_for('admin_categories') }}">分类管理</a>
+    </div>
+</section>
+
+<section class="stat-grid">
+    <div class="stat-card">
+        <span>{{ stats.product_count }}</span>
+        <p>商品总数</p>
+    </div>
+    <div class="stat-card">
+        <span>{{ stats.active_count }}</span>
+        <p>已上架商品</p>
+    </div>
+    <div class="stat-card">
+        <span>{{ stats.pending_count }}</span>
+        <p>待审核申报</p>
+    </div>
+    <div class="stat-card">
+        <span>{{ stats.pending_shipment_count }}</span>
+        <p>待审批发货</p>
+    </div>
+    <div class="stat-card">
+        <span>{{ stats.low_stock_count }}</span>
+        <p>库存预警（≤ {{ low_stock_threshold }}）</p>
+    </div>
+    <div class="stat-card">
+        <span>￥{{ "%.2f"|format(stats.order_total) }}</span>
+        <p>订单总金额</p>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <article class="panel">
+        <h2>热门商品销量</h2>
+        <canvas id="salesChart" height="150"></canvas>
+    </article>
+    <article class="panel">
+        <h2>库存预警（剩余 {{ low_stock_threshold }} 件及以下）</h2>
+        {% if low_stock %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>商品</th>
+                        <th>分类</th>
+                        <th>库存</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in low_stock %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.category_name }}</td>
+                            <td>{{ product.stock }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="muted">暂无低库存商品。</p>
+        {% endif %}
+    </article>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartLabels = {{ top_products|map(attribute='name')|list|tojson }};
+const chartValues = {{ top_products|map(attribute='sales')|list|tojson }};
+new Chart(document.getElementById('salesChart'), {
+    type: 'bar',
+    data: {
+        labels: chartLabels,
+        datasets: [{
+            label: '销量',
+            data: chartValues,
+            backgroundColor: '#2f7d57'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+</script>
+{% endblock %}

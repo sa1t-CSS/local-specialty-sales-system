@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}购物车 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>购物车</h1>
+    <p>合计金额：￥{{ "%.2f"|format(total) }}</p>
+</section>
+
+{% if items %}
+    <section class="table-panel">
+        <table>
+            <thead>
+                <tr>
+                    <th>商品</th>
+                    <th>商家</th>
+                    <th>单价</th>
+                    <th>库存</th>
+                    <th>数量</th>
+                    <th>小计</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.merchant_name }}</td>
+                        <td>￥{{ "%.2f"|format(item.price) }}</td>
+                        <td>{{ item.stock }}</td>
+                        <td>
+                            <form class="auto-submit-form" method="post" action="{{ url_for('update_cart', cart_id=item.cart_id) }}">
+                                <input class="short-input" type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.stock }}"
+                                       aria-label="修改 {{ item.name }} 数量">
+                                <span class="saving-hint">修改后自动保存</span>
+                            </form>
+                        </td>
+                        <td>￥{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('delete_cart_item', cart_id=item.cart_id) }}">
+                                <button class="small danger" type="submit">删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <form class="checkout-bar" method="post" action="{{ url_for('checkout') }}">
+            <strong>应付：￥{{ "%.2f"|format(total) }}</strong>
+            <button type="submit">提交订单</button>
+        </form>
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>购物车为空</h2>
+        <a class="button" href="{{ url_for('index') }}">去选购商品</a>
+    </section>
+{% endif %}
+
+<script>
+document.querySelectorAll('.auto-submit-form input').forEach((input) => {
+    let originalValue = input.value;
+    const submitIfChanged = () => {
+        if (input.value !== originalValue) {
+            input.form.submit();
+        }
+    };
+    input.addEventListener('change', submitIfChanged);
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            submitIfChanged();
+        }
+    });
+});
+</script>
+{% endblock %}

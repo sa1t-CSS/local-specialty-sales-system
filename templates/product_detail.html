@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+    <div class="detail-image">
+        {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="image-fallback large">土特产</div>
+        {% endif %}
+    </div>
+    <div class="detail-info">
+        <p class="eyebrow">{{ product.category_name }} · {{ product.origin or '产地待补充' }}</p>
+        <h1>{{ product.name }}</h1>
+        <p class="detail-description">{{ product.description or '暂无商品描述。' }}</p>
+        <div class="detail-price">￥{{ "%.2f"|format(product.price) }}</div>
+        <div class="detail-facts">
+            <span>商家：{{ product.merchant_name }}</span>
+            <span>库存：{{ product.stock }}</span>
+            <span>销量：{{ product.sales }}</span>
+        </div>
+        {% if current_user and current_user.role == 'consumer' %}
+            <form class="buy-form" method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+                <label>
+                    数量
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                </label>
+                <button type="submit">加入购物车</button>
+            </form>
+        {% elif not current_user %}
+            <div class="inline-actions">
+                <a class="button" href="{{ url_for('login') }}">登录后购买</a>
+                <a class="button secondary" href="{{ url_for('register') }}">注册账号</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

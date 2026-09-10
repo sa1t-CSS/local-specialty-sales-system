@@ -1,0 +1,17 @@
+# Local tools and credentials
+.idea/
+.vscode/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+sales.db
+sales.db-*
+tmp/

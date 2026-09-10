@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}我的订单 - 土特产网络销售系统{% endblock %}
+
+{% block content %}
+<section class="page-title">
+    <h1>我的订单</h1>
+</section>
+
+{% if orders %}
+    <section class="order-list">
+        {% for order in orders %}
+            <article class="panel">
+                <div class="order-head">
+                    <div>
+                        <strong>订单 #{{ order.id }}</strong>
+                        <span>{{ order.created_at }}</span>
+                    </div>
+                    <div>
+                        <span class="status">{{ order_status_names[order.status] }}</span>
+                        <strong>￥{{ "%.2f"|format(order.total_amount) }}</strong>
+                    </div>
+                </div>
+                {% if fulfillments[order.id] %}
+                    <div class="fulfillment-list">
+                        {% for fulfillment in fulfillments[order.id] %}
+                            <div class="fulfillment-row">
+                                <strong>{{ fulfillment.merchant_name }}</strong>
+                                <span class="status {{ fulfillment.status }}">{{ fulfillment_status_names[fulfillment.status] }}</span>
+                                {% if fulfillment.shipping_note %}
+                                    <span>{{ fulfillment.shipping_note }}</span>
+                                {% endif %}
+                                {% if fulfillment.reject_reason %}
+                                    <span class="danger-text">原因：{{ fulfillment.reject_reason }}</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>商品</th>
+                            <th>单价</th>
+                            <th>数量</th>
+                            <th>小计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items[order.id] %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td>￥{{ "%.2f"|format(item.price) }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>￥{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state">
+        <h2>暂无订单</h2>
+        <a class="button" href="{{ url_for('index') }}">浏览商品</a>
+    </section>
+{% endif %}
+{% endblock %}
